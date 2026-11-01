@@ -14,7 +14,7 @@ WiFiServer server(5000);
 WiFiClient client;
 bool clientConnected = false;
 
-// Mesage buffer 
+// Mesage buffer ,
 String buffer = "";
 
 void startWiFi() {
@@ -24,7 +24,7 @@ void startWiFi() {
     //(Network SSD,Password , chanel number,ssd hide network and max devices connected to it)
 
     //Print Wifi information
-    Serial.print("Siec WiFi: ");
+    Serial.print(" WiFi: ");
     Serial.println(ssid);
     Serial.print("IP ESP32: ");
     Serial.println(WiFi.softAPIP());
@@ -37,7 +37,7 @@ void checkNewClient() {
     
     // Check if client diconnected and disconnect comunication 
     if (clientConnected && !client.connected()) {
-        Serial.println("Raspberry Pi sie rozlaczylo");
+        Serial.println("Client disconnected");
         client.stop();
         clientConnected = false;
     }
@@ -52,7 +52,7 @@ void checkNewClient() {
         buffer = "";
         
         //print client information after connection
-        Serial.print("Polaczono z: ");
+        Serial.print("Connected with: ");
         Serial.println(client.remoteIP());
         Serial.println(client.localPort());
         Serial.println(client.connected());
@@ -68,15 +68,33 @@ bool readMessage(String &message) {
 
     char c = client.read();
 
+    // checking the end of message
     if ( c == '\n') {
 
+        message = buffer;
+        buffer = "";
 
+        message.trim();
 
+        if (message.length() > 0) {
+            return true;
+        }
 
-        
-    }
+        }
+    else { 
+        //Creates the recieved message 
+        buffer += c;
 
-    
+        //Messgae to long send false
+        if (buffer.length() > 512) {
+
+            Serial.println("Message too long!");
+
+            buffer = "";
+            }
+        }
+
+    return false;
 }
 
 void sendMessage(String message) {
