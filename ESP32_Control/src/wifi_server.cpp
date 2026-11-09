@@ -16,6 +16,8 @@ bool clientConnected = false;
 
 // Mesage buffer ,
 String buffer = "";
+//new message
+bool new_message = false;
 
 void startWiFi() {
     WiFi.mode(WIFI_AP); //
@@ -54,12 +56,14 @@ void checkNewClient() {
         //print client information after connection
         Serial.print("Connected with: ");
         Serial.println(client.remoteIP());
+        Serial.print("on port number : ");
         Serial.println(client.localPort());
+        Serial.print("connection satus : ");
         Serial.println(client.connected());
     }
 }
 
-bool readMessage(String &message) {
+bool readMessage(String &message ) {
 
 
     if (!clientConnected) {
@@ -68,8 +72,15 @@ bool readMessage(String &message) {
 
     char c = client.read();
 
+    //check begginign of the message
+    if (c == 'S' ) {
+        buffer = "";
+        new_message = true;
+
+    }
+    
     // checking the end of message
-    if ( c == '\n') {
+    if ( c == '\n' && new_message) {
 
         message = buffer;
         buffer = "";
@@ -77,19 +88,22 @@ bool readMessage(String &message) {
         message.trim();
 
         if (message.length() > 0) {
+            new_message = false;
             return true;
+
         }
 
         }
     else { 
         //Creates the recieved message 
+        if (new_message){
         buffer += c;
-
+        }
         //Messgae to long send false
         if (buffer.length() > 512) {
 
             Serial.println("Message too long!");
-
+            new_message = false;
             buffer = "";
             }
         }
