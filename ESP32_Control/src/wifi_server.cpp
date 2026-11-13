@@ -70,8 +70,13 @@ bool readMessage(String &message ) {
         return false;
     }
 
-    char c = client.read();
+    //Check if something is in TCP buffer
+    if (client.available() <= 0) {
+    return false;
+}
 
+    char c = client.read();
+    
     //check begginign of the message
     if (c == 'S' ) {
         buffer = "";
@@ -80,7 +85,7 @@ bool readMessage(String &message ) {
     }
     
     // checking the end of message
-    if ( c == '\n' && new_message) {
+    if ( c == '\n' && new_message  ) {
 
         message = buffer;
         buffer = "";
@@ -89,6 +94,7 @@ bool readMessage(String &message ) {
 
         if (message.length() > 0) {
             new_message = false;
+
             return true;
 
         }
@@ -98,6 +104,7 @@ bool readMessage(String &message ) {
         //Creates the recieved message 
         if (new_message){
         buffer += c;
+        
         }
         //Messgae to long send false
         if (buffer.length() > 512) {
